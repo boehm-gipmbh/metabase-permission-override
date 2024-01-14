@@ -1,0 +1,22 @@
+{
+  "name": "metabase-permissions-api",
+  "module": "index.ts",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Metabase Permissions API",
+  "main": "index.ts",
+  "scripts": {
+    "start": "bun index.ts",
+    "dev": "bun --hot index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "hono": "^3.12.3"
+  }
+}

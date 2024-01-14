@@ -1,0 +1,79 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1.25.3-alpine
+    restart: always
+    hostname: nginx
+    container_name: nginx
+    ports:
+      - 8080:80
+    volumes:
+      - $PWD/nginx-conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - $PWD/nginx-conf/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      metabase:
+        condition: service_healthy
+    networks:
+      - metabase_network
+
+  api:
+    build: ./api
+    hostname: api
+    container_name: api
+    restart: always
+    networks:
+      - metabase_network
+    # volumes:
+    #   - $PWD/api/index.ts:/usr/src/app/index.ts
+    environment:
+      METABASE_URL: http://metabase:3000
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 64M
+        reservations:
+          cpus: '0.5'
+          memory: 32M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+
+  metabase:
+    build:
+      context: ./metabase
+      dockerfile: Dockerfile
+      args:
+        version: v1.48.3
+    hostname: metabase
+    container_name: metabase
+    networks:
+      - metabase_network
+    healthcheck:
+      test: curl --fail -X GET -I http://localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+  
+  postgres-data1:
+    image:  metabase/qa-databases:postgres-sample-15
+    container_name: postgres
+    hostname: postgres
+    networks: 
+      - metabase_network
+    cpus: 1
+    mem_limit: 1024mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d sample"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+networks:
+  metabase_network:
+    driver: bridge
