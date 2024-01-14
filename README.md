@@ -1,4 +1,4 @@
-# Override a specific Metabase API verb
+# Override a specific Metabase API method
 
 This project shows how to override a specific Metabase API call from the frontend
 
