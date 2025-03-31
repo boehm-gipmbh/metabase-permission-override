@@ -24,7 +24,6 @@ app.get('/api/setup/admin_checklist', async (c) => {
         c.status(admin_checklist_call.status);
         return c.json(admin_checklist_call_json.message);
     }
-    console.log('Admin checklist call', admin_checklist_call_json);
     return c.json(admin_checklist_call_json);
 
 })
@@ -44,9 +43,27 @@ app.get('/api/database', async (c) => {
         c.status(db_call.status);
         return c.json(db_call_json.message);
     }
-    console.log('Database call', db_call_json);
 
     return c.json(db_call_json);
+})
+
+app.get('/api/user/current', async (c) => {
+    const api_user_current_call = await fetch(`${METABASE_URL}/api/user/current`, {
+        method: 'GET',
+        headers: {
+            'Cookie': c.req.header('Cookie')
+        }
+    });
+    const api_user_current_json = await api_user_current_call.json();
+
+    // If the backend responds with an error, pass that through to the frontend
+    if (api_user_current_call.status !== 200) {
+        c.status(api_user_current_call.status);
+        return c.json(api_user_current_json.message);
+    }
+
+    console.log('Current user call', api_user_current_json);
+    return c.json(api_user_current_json);
 })
 
 app.post('/api/database', async (c) => {
