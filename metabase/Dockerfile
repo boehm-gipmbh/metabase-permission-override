@@ -1,11 +1,12 @@
 FROM eclipse-temurin:11-jre as runner
 
-ENV FC_LANG en-US LC_CTYPE en_US.UTF-8
+ENV FC_LANG = "en-US LC_CTYPE en_US.UTF-8"
 ARG version
 
 WORKDIR /app/
 
 ADD ./run_metabase.sh .
+ADD ./do_nothing.sh .
 
 RUN apt-get update && \
   apt-get upgrade -y && \
@@ -18,10 +19,12 @@ RUN apt-get update && \
   keytool -list -cacerts && \
   curl https://downloads.metabase.com/enterprise/${version}/metabase.jar -o metabase.jar && \
   chmod +x run_metabase.sh && \
+  chmod +x do_nothing.sh && \
   chmod -R a+rwX /app/
 
 # expose our default runtime port
 EXPOSE 3000
 
 # run it
-ENTRYPOINT ["/app/run_metabase.sh"]
+# ENTRYPOINT ["/app/run_metabase.sh"]
+ENTRYPOINT ["java", "-jar", "/app/metabase.jar"]
