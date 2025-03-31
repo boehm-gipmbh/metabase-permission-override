@@ -44,41 +44,88 @@ services:
       retries: 5
       start_period: 10s
 
+  #metabase:
+  #  build:
+  #    context: ./metabase
+  #    dockerfile: Dockerfile
+  #    args:
+  #      version: v1.53.3
+  #  hostname: metabase
+  #  container_name: metabase
+  #  networks:
+  #    - metabase_network
+  #  healthcheck:
+  #    test: curl --fail -X GET -I http://localhost:3000/api/health || exit 1
+  #    interval: 30s
+  #    timeout: 5s
+  #    retries: 5
+
   metabase:
-    build:
-      context: ./metabase
-      dockerfile: Dockerfile
-      args:
-        version: v1.48.3
-    hostname: metabase
+    image: metabase/metabase-enterprise:v1.53.3
     container_name: metabase
+    hostname: metabase
+    volumes:
+      - /home/boehm/docker_config:/home/metabase
+      - /dev/urandom:/dev/random:ro
+    ports:
+      - 3000:3000
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabaseappdb
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: mysecretpassword
+      MB_DB_HOST: postgres
+
+      MB_CONFIG_FILE_PATH: /home/metabase/config.yaml
+      MB_PREMIUM_EMBEDDING_TOKEN: 5f8837742940cc0c72310c4e97e57a69b8a50c6edf17447d74853aaf13df2ee1
+      # MB_JWT_ENABLED: true # Default: false
+      # MB_JWT_SHARED_SECRET: DASISTGANZUNDZUKURZ
+
+      MB_NOT_BEHIND_PROXY: false # Default: false
     networks:
       - metabase_network
     healthcheck:
-      test: curl --fail -X GET -I http://localhost:3000/api/health || exit 1
-      interval: 30s
+      test: curl --fail -I http://localhost:3000/api/health || exit 1
+      interval: 15s
       timeout: 5s
       retries: 5
-  
-  postgres-data1:
-    image:  metabase/qa-databases:postgres-sample-15
+
+  postgres:
+    image: postgres:latest
     container_name: postgres
     hostname: postgres
     ports:
-      - 5432:5432
-    networks: 
-      - metabase_network
-    cpus: 1
-    mem_limit: 1024mb
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U metabase -d sample"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
+      - 54320:5432
+
+    volumes:
+      - /home/boehm/docker_data/metabase_enterprise_postgres_data/data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: metabase
-      POSTGRES_PASSWORD: metabase
-      POSTGRES_DB: sample
+      POSTGRES_DB: metabaseappdb
+      POSTGRES_PASSWORD: mysecretpassword
+    networks:
+      - metabase_network
+
+  #postgres-data1:
+  #  image:  metabase/qa-databases:postgres-sample-15
+  #  container_name: postgres
+  #  hostname: postgres
+  #  ports:
+  #    - 5432:5432
+  #  networks:
+  #    - metabase_network
+  #  cpus: 1
+  #  mem_limit: 1024mb
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "pg_isready -U metabase -d sample"]
+  #    interval: 5s
+  #    timeout: 5s
+  #    retries: 3
+  #  environment:
+  #    POSTGRES_USER: metabase
+  #    POSTGRES_PASSWORD: metabase
+  #    POSTGRES_DB: sample
 
 networks:
   metabase_network:

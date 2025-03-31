@@ -49,6 +49,25 @@ app.get('/api/database', async (c) => {
     return c.json(db_call_json);
 })
 
+app.get('/api/user/current', async (c) => {
+    const api_user_current_call = await fetch(`${METABASE_URL}/api/user/current`, {
+        method: 'GET',
+        headers: {
+            'Cookie': c.req.header('Cookie')
+        }
+    });
+    const api_user_current_json = await api_user_current_call.json();
+
+    // If the backend responds with an error, pass that through to the frontend
+    if (api_user_current_call.status !== 200) {
+        c.status(api_user_current_call.status);
+        return c.json(api_user_current_json.message);
+    }
+
+    console.log('Current user call', api_user_current_json);
+    return c.json(api_user_current_json);
+})
+
 app.post('/api/database', async (c) => {
     // Get the permission graph first, in order to get the revision and use it later
     const permission_graph = await fetch(`${METABASE_URL}/api/permissions/graph`, {
