@@ -64,6 +64,8 @@ services:
     image:  metabase/qa-databases:postgres-sample-15
     container_name: postgres
     hostname: postgres
+    ports:
+      - 5432:5432
     networks: 
       - metabase_network
     cpus: 1
@@ -73,6 +75,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
+    environment:
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabase
+      POSTGRES_DB: sample
 
 networks:
   metabase_network:
