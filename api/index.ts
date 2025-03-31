@@ -9,6 +9,46 @@ app.get('/api/health', async c => {
     return c.json({ status: 'ok' });
 });
 
+app.get('/api/setup/admin_checklist', async (c) => {
+    // Pass through the admin checklist from the frontend to the backend
+    const admin_checklist_call = await fetch(`${METABASE_URL}/api/setup/admin_checklist`, {
+        method: 'GET',
+        headers: {
+            'Cookie': c.req.header('Cookie')
+        }
+    });
+    const admin_checklist_call_json = await admin_checklist_call.json();
+
+    // If the backend responds with an error, pass that through to the frontend
+    if (admin_checklist_call.status !== 200) {
+        c.status(admin_checklist_call.status);
+        return c.json(admin_checklist_call_json.message);
+    }
+    console.log('Admin checklist call', admin_checklist_call_json);
+    return c.json(admin_checklist_call_json);
+
+})
+
+app.get('/api/database', async (c) => {
+    // Pass through the database creation from the frontend to the backend
+    const db_call = await fetch(`${METABASE_URL}/api/database`, {
+        method: 'GET',
+        headers: {
+            'Cookie': c.req.header('Cookie')
+        }
+    });
+    const db_call_json = await db_call.json();
+
+    // If the backend responds with an error, pass that through to the frontend
+    if (db_call.status !== 200) {
+        c.status(db_call.status);
+        return c.json(db_call_json.message);
+    }
+    console.log('Database call', db_call_json);
+
+    return c.json(db_call_json);
+})
+
 app.post('/api/database', async (c) => {
     // Get the permission graph first, in order to get the revision and use it later
     const permission_graph = await fetch(`${METABASE_URL}/api/permissions/graph`, {
